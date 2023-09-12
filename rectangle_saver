@@ -1,0 +1,44 @@
+from PIL import Image, ImageDraw
+import os
+
+def page_folder(page_image_path, num_rows = 4, num_columns = 1, enhanced_dpi = 100, left_space = 118, upper_space = 378, right_space = 118, bottom_space = 128):
+
+    image = Image.open(page_image_path)  
+    right = image.width - right_space
+    bottom = image.height - bottom_space
+
+    # Crop the image
+    cropped_image = image.crop((left_space, upper_space, right, bottom))
+    
+    # Calculate the dimensions of each rectangle
+    rect_width = cropped_image.width // num_columns
+    rect_height = (cropped_image.height - (num_rows - 1)) // num_rows
+
+    # Create a draw object
+    draw = ImageDraw.Draw(cropped_image)
+
+    # Create a folder to save the cropped rectangles
+
+    page_folder_name = os.path.splitext(page_image_path)[0].split('\\')[-1]
+    folder_dir = os.path.dirname(page_image_path)
+
+    # Draw the rectangles and save them with increased DPI
+    for row in range(num_rows):
+        for col in range(num_columns):
+            # Calculate the coordinates for the top-left and bottom-right corners of each rectangle
+            left = col * rect_width
+            upper = row * (rect_height )
+            right = left + rect_width
+            lower = upper + rect_height
+            
+            # Crop the rectangle
+            rectangle = cropped_image.crop((left, upper, right, lower))
+            
+            # Increase the DPI to 100
+            rectangle = rectangle.resize((int(rectangle.width * enhanced_dpi / 72), int(rectangle.height * enhanced_dpi / 72)), Image.LANCZOS)
+            
+            # Save the rectangle with increased DPI
+            if row  * num_columns + col + 1 < 10:
+                rectangle.save(f"{folder_dir}/{page_folder_name}_box_0{row  * num_columns + col + 1}.jpg", dpi=(enhanced_dpi, enhanced_dpi))
+            else:
+                rectangle.save(f"{folder_dir}/{page_folder_name}_box_{row  * num_columns + col + 1}.jpg", dpi=(enhanced_dpi, enhanced_dpi))
